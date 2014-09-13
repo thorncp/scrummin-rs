@@ -1,0 +1,9 @@
+[package]
+
+name = "scrummin"
+version = "0.0.1"
+authors = ["Chris Thorn <thorncp@gmail.com>"]
+
+[[bin]]
+
+name = "scrummin"
