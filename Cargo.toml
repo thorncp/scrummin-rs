@@ -7,3 +7,7 @@ authors = ["Chris Thorn <thorncp@gmail.com>"]
 [[bin]]
 
 name = "scrummin"
+
+[dependencies.chrono]
+
+git = "https://github.com/lifthrasiir/rust-chrono"

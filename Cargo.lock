@@ -1,4 +1,12 @@
 [root]
 name = "scrummin"
 version = "0.0.1"
+dependencies = [
+ "chrono 0.1.0 (git+https://github.com/lifthrasiir/rust-chrono#d6e0c3f266f6e02465d0d7ac26ccb66b9953ebc8)",
+]
+
+[[package]]
+name = "chrono"
+version = "0.1.0"
+source = "git+https://github.com/lifthrasiir/rust-chrono#d6e0c3f266f6e02465d0d7ac26ccb66b9953ebc8"
 
