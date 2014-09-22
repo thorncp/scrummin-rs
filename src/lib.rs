@@ -26,9 +26,23 @@ impl Participant {
     }
 }
 
+pub struct Meeting {
+    participants: Vec<Participant>
+}
+
+impl Meeting {
+    pub fn new() -> Meeting {
+        Meeting { participants: Vec::new() }
+    }
+
+    pub fn add_participant(&mut self, participant: Participant) {
+        self.participants.push(participant);
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::Participant;
+    use super::{Meeting, Participant};
     use chrono::UTC;
 
     #[test]
@@ -62,5 +76,18 @@ mod tests {
         participant.started_at = None;
         participant.ended_at = Some(UTC::now());
         assert_eq!(participant.duration(), None);
+    }
+
+    #[test]
+    fn test_can_add_participants_to_meeting() {
+        let bob = Participant::new("Bob");
+        let sue = Participant::new("Sue");
+
+        let mut meeting = Meeting::new();
+        meeting.add_participant(bob);
+        meeting.add_participant(sue);
+
+        assert!(meeting.participants.iter().any(|p| p.name.as_slice() == "Bob"));
+        assert!(meeting.participants.iter().any(|p| p.name.as_slice() == "Sue"));
     }
 }
