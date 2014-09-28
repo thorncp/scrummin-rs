@@ -26,17 +26,33 @@ impl Participant {
     }
 }
 
-pub struct Meeting {
-    participants: Vec<Participant>
+pub struct Meeting<'m> {
+    participants: Vec<&'m Participant>,
+    // TODO: store Iterator instead of hand rolling?
+    current: uint
 }
 
-impl Meeting {
-    pub fn new() -> Meeting {
-        Meeting { participants: Vec::new() }
+impl<'m> Meeting<'m> {
+    pub fn new() -> Meeting<'m> {
+        Meeting { participants: Vec::new(), current: 0 }
     }
 
-    pub fn add_participant(&mut self, participant: Participant) {
+    pub fn add_participant(&mut self, participant: &'m Participant) {
         self.participants.push(participant);
+    }
+
+    pub fn start(&mut self) {
+    }
+}
+
+impl<'m> Iterator<&'m Participant> for Meeting<'m> {
+    fn next(&mut self) -> Option<&'m Participant> {
+        if self.current < self.participants.len() {
+            self.current += 1;
+            Some(self.participants[self.current - 1])
+        } else {
+            None
+        }
     }
 }
 
@@ -84,10 +100,24 @@ mod tests {
         let sue = Participant::new("Sue");
 
         let mut meeting = Meeting::new();
-        meeting.add_participant(bob);
-        meeting.add_participant(sue);
+        meeting.add_participant(&bob);
+        meeting.add_participant(&sue);
 
         assert!(meeting.participants.iter().any(|p| p.name.as_slice() == "Bob"));
         assert!(meeting.participants.iter().any(|p| p.name.as_slice() == "Sue"));
+    }
+
+    #[test]
+    fn test_move_to_next_participant() {
+        let bob = Participant::new("Bob");
+        let sue = Participant::new("Sue");
+
+        let mut meeting = Meeting::new();
+        meeting.add_participant(&bob);
+        meeting.add_participant(&sue);
+
+        meeting.start();
+        assert_eq!(meeting.next().unwrap().name.as_slice(), "Bob");
+        assert_eq!(meeting.next().unwrap().name.as_slice(), "Sue");
     }
 }
