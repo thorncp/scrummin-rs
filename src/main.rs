@@ -3,17 +3,18 @@ extern crate chrono;
 
 #[cfg(not(test))]
 use scrummin::{Meeting, Participant};
+#[cfg(not(test))]
+use std::os;
 
 #[cfg(not(test))]
 fn main() {
     let mut meeting = Meeting::new();
-    let bob = &Participant::new("Bob");
-    let sue = &Participant::new("Sue");
-    let joanne = &Participant::new("Joanne");
+    let participants: Vec<Participant> =
+        os::args().iter().skip(1).map(|a| Participant::new(a.as_slice())).collect();
 
-    meeting.add_participant(bob);
-    meeting.add_participant(sue);
-    meeting.add_participant(joanne);
+    for participant in participants.iter() {
+        meeting.add_participant(participant);
+    }
 
     meeting.start();
 
