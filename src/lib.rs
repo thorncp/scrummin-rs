@@ -2,6 +2,7 @@ extern crate chrono;
 
 use chrono::{DateTime, UTC};
 use std::time::duration::Duration;
+use std::rand::{task_rng, Rng};
 
 pub struct Participant {
     pub name: String,
@@ -42,6 +43,8 @@ impl<'m> Meeting<'m> {
     }
 
     pub fn start(&mut self) {
+        let mut rng = task_rng();
+        rng.shuffle(self.participants.as_mut_slice());
     }
 }
 
@@ -117,7 +120,10 @@ mod tests {
         meeting.add_participant(&sue);
 
         meeting.start();
-        assert_eq!(meeting.next().unwrap().name.as_slice(), "Bob");
-        assert_eq!(meeting.next().unwrap().name.as_slice(), "Sue");
+
+        for participant in meeting {
+            let name = participant.name.as_slice();
+            assert!(name == "Bob" || name == "Sue");
+        }
     }
 }
