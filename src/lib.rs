@@ -3,6 +3,7 @@ extern crate chrono;
 use chrono::{DateTime, UTC};
 use std::time::duration::Duration;
 use std::rand::{task_rng, Rng};
+use std::slice::Items;
 
 pub struct Participant {
     pub name: String,
@@ -11,9 +12,9 @@ pub struct Participant {
 }
 
 impl Participant {
-    pub fn new(name: &str) -> Participant {
+    pub fn new(name: String) -> Participant {
         Participant {
-            name: name.to_string(),
+            name: name,
             started_at: None,
             ended_at: None
         }
@@ -27,18 +28,16 @@ impl Participant {
     }
 }
 
-pub struct Meeting<'m> {
-    participants: Vec<&'m Participant>,
-    // TODO: store Iterator instead of hand rolling?
-    current: uint
+pub struct Meeting {
+    participants: Vec<Participant>
 }
 
-impl<'m> Meeting<'m> {
-    pub fn new() -> Meeting<'m> {
-        Meeting { participants: Vec::new(), current: 0 }
+impl Meeting {
+    pub fn new() -> Meeting {
+        Meeting { participants: Vec::new() }
     }
 
-    pub fn add_participant(&mut self, participant: &'m Participant) {
+    pub fn add_participant(&mut self, participant: Participant) {
         self.participants.push(participant);
     }
 
@@ -46,16 +45,15 @@ impl<'m> Meeting<'m> {
         let mut rng = task_rng();
         rng.shuffle(self.participants.as_mut_slice());
     }
-}
 
-impl<'m> Iterator<&'m Participant> for Meeting<'m> {
-    fn next(&mut self) -> Option<&'m Participant> {
-        if self.current < self.participants.len() {
-            self.current += 1;
-            Some(self.participants[self.current - 1])
-        } else {
-            None
+    pub fn build_participants(&mut self, names: &[String]) {
+        for name in names.iter() {
+            self.participants.push(Participant::new(name.clone()))
         }
+    }
+
+    pub fn participants<'a>(&'a mut self) -> Items<'a, Participant> {
+        self.participants.iter()
     }
 }
 
@@ -66,7 +64,7 @@ mod tests {
 
     #[test]
     fn test_new_has_name_with_no_time() {
-        let participant = Participant::new("Bob");
+        let participant = Participant::new("Bob".to_string());
         assert_eq!(participant.name.as_slice(), "Bob");
         assert_eq!(participant.started_at, None);
         assert_eq!(participant.ended_at, None);
@@ -86,7 +84,7 @@ mod tests {
 
     #[test]
     fn test_duration_requires_times() {
-        let mut participant = Participant::new("Bob");
+        let mut participant = Participant::new("Bob".to_string());
         assert_eq!(participant.duration(), None);
 
         participant.started_at = Some(UTC::now());
@@ -99,12 +97,12 @@ mod tests {
 
     #[test]
     fn test_can_add_participants_to_meeting() {
-        let bob = Participant::new("Bob");
-        let sue = Participant::new("Sue");
+        let bob = Participant::new("Bob".to_string());
+        let sue = Participant::new("Sue".to_string());
 
         let mut meeting = Meeting::new();
-        meeting.add_participant(&bob);
-        meeting.add_participant(&sue);
+        meeting.add_participant(bob);
+        meeting.add_participant(sue);
 
         assert!(meeting.participants.iter().any(|p| p.name.as_slice() == "Bob"));
         assert!(meeting.participants.iter().any(|p| p.name.as_slice() == "Sue"));
@@ -112,16 +110,16 @@ mod tests {
 
     #[test]
     fn test_move_to_next_participant() {
-        let bob = Participant::new("Bob");
-        let sue = Participant::new("Sue");
+        let bob = Participant::new("Bob".to_string());
+        let sue = Participant::new("Sue".to_string());
 
         let mut meeting = Meeting::new();
-        meeting.add_participant(&bob);
-        meeting.add_participant(&sue);
+        meeting.add_participant(bob);
+        meeting.add_participant(sue);
 
         meeting.start();
 
-        for participant in meeting {
+        for participant in meeting.participants() {
             let name = participant.name.as_slice();
             assert!(name == "Bob" || name == "Sue");
         }
